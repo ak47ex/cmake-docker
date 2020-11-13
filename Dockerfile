@@ -34,8 +34,10 @@ RUN mkdir /opt/android \
 && wget -q https://dl.google.com/android/repository/commandlinetools-${ANDROID_CMD_LINE_TOOLS}.zip -P /tmp \
 && unzip -q -d /opt/android/cmdline-tools /tmp/commandlinetools-${ANDROID_CMD_LINE_TOOLS}.zip
 
+ARG ANDROID_CMAKE_VERSION=3.10.2
+
 # install packages and accept all licenses
-RUN yes Y | /opt/android/cmdline-tools/tools/bin/sdkmanager --install "build-tools;${ANDROID_BUILD_TOOLS_LEVEL}" "platforms;android-${ANDROID_API_LEVEL}" "platform-tools" "ndk;${ANDROID_NDK_VERSION}" \
+RUN yes Y | /opt/android/cmdline-tools/tools/bin/sdkmanager --install "build-tools;${ANDROID_BUILD_TOOLS_LEVEL}" "platforms;android-${ANDROID_API_LEVEL}" "platform-tools" "ndk;${ANDROID_NDK_VERSION}" "cmake;${ANDROID_CMAKE_VERSION}"\
 && yes Y | /opt/android/cmdline-tools/tools/bin/sdkmanager --licenses
 
 # Environment variables to be used for build
