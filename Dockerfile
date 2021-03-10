@@ -12,22 +12,14 @@ RUN apt update -qq && apt install -qq -y openjdk-11-jdk vim git unzip libglu1 li
 
 # Version of tools:
 # In Code
-ARG GRADLE_VERSION=7.0-milestone-2
-
-# Download gradle, install gradle and gradlew
-RUN wget -q https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip -P /tmp \
-&& unzip -q -d /opt/gradle /tmp/gradle-${GRADLE_VERSION}-bin.zip \
-&& mkdir /opt/gradlew \
-&& /opt/gradle/gradle-${GRADLE_VERSION}/bin/gradle wrapper --gradle-version ${GRADLE_VERSION} --distribution-type all -p /opt/gradlew  \
-&& /opt/gradle/gradle-${GRADLE_VERSION}/bin/gradle wrapper -p /opt/gradlew
-
 ARG ANDROID_CMD_LINE_TOOLS=linux-6858069_latest
 
 # Download commandlinetools
 RUN mkdir /opt/android \
 && mkdir /opt/android/cmdline-tools \
 && wget -q https://dl.google.com/android/repository/commandlinetools-${ANDROID_CMD_LINE_TOOLS}.zip -P /tmp \
-&& unzip -q -d /opt/android/cmdline-tools /tmp/commandlinetools-${ANDROID_CMD_LINE_TOOLS}.zip
+&& unzip -q -d /opt/android/cmdline-tools /tmp/commandlinetools-${ANDROID_CMD_LINE_TOOLS}.zip \
+&& mv /opt/android/cmdline-tools/cmdline-tools /opt/android/cmdline-tools/tools
 
 ARG ANDROID_API_LEVEL=30
 # https://developer.android.com/studio/releases/build-tools
@@ -40,16 +32,14 @@ ARG ANDROID_CMAKE_VERSION=3.18.1
 ARG ANDROID_NDK_VERSION=22.0.7026061
 
 # install packages and accept all licenses
-RUN yes Y | /opt/android/cmdline-tools/tools/bin/sdkmanager --install "build-tools;${ANDROID_BUILD_TOOLS_LEVEL}" "platforms;android-${ANDROID_API_LEVEL}" "platform-tools" "ndk;${ANDROID_NDK_VERSION}" "cmake;${ANDROID_CMAKE_VERSION}"\
+RUN yes Y | /opt/android/cmdline-tools/tools/bin/sdkmanager --install "build-tools;${ANDROID_BUILD_TOOLS_LEVEL}" "platforms;android-${ANDROID_API_LEVEL}" "platform-tools" "ndk;${ANDROID_NDK_VERSION}" "cmake;${ANDROID_CMAKE_VERSION}" --channel=3\
 && yes Y | /opt/android/cmdline-tools/tools/bin/sdkmanager --licenses
 
 # Environment variables to be used for build
-ENV GRADLE_HOME=/opt/gradle/gradle-$GRADLE_VERSION
 ENV ANDROID_HOME=/opt/android
 ENV ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}
-ENV PATH "$PATH:$GRADLE_HOME/bin:/opt/gradlew:$ANDROID_HOME/emulator:$ANDROID_HOME/cmdline-tools/tools/bin:$ANDROID_HOME/platform-tools:${ANDROID_NDK_HOME}"
+ENV PATH "$PATH:/opt/gradlew:$ANDROID_HOME/emulator:$ANDROID_HOME/cmdline-tools/tools/bin:$ANDROID_HOME/platform-tools:${ANDROID_NDK_HOME}"
 ENV LD_LIBRARY_PATH "$ANDROID_HOME/emulator/lib64:$ANDROID_HOME/emulator/lib64/qt/lib"
 
 # Clean up
-RUN rm /tmp/gradle-${GRADLE_VERSION}-bin.zip \
-&& rm /tmp/commandlinetools-${ANDROID_CMD_LINE_TOOLS}.zip
+RUN rm /tmp/commandlinetools-${ANDROID_CMD_LINE_TOOLS}.zip
